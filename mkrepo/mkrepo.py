@@ -64,8 +64,12 @@ def mk_dir(rootdir):
     >>> shutil.rmtree('/tmp/foo1')
 
     """
+    print(rootdir)
+    print(PKGNAME)
+    
     os.makedirs(rootdir, exist_ok=True)
     os.makedirs(os.path.join(rootdir, PKGNAME), exist_ok=True)
+    print(os.path.join(rootdir, PKGNAME, '__init__.py'))
     write_file(os.path.join(rootdir, PKGNAME, '__init__.py'), '')
     
 ##############################################################
@@ -96,7 +100,7 @@ def mk_jenkinsfile():
     write_file('Jenkinsfile', 'TBD')
 
 def mk_manifest():
-    write_file('MANIFEST.ini', 'include LICENSE')
+    write_file('MANIFEST.in', 'include LICENSE')
 
 def mk_make():
     write_file('Makefile', 'TBD')
@@ -154,7 +158,10 @@ def doall():
 def runtests():
     import doctests
     doctests.testmod()
-    
-if __name__ == '__main__':
+
+def main():
     args = docopt(DOCOPT)
     run(args)
+
+if __name__ == '__main__':
+    main()

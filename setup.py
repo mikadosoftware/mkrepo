@@ -12,6 +12,8 @@ setup(
      description='A Description to change',
      author='author',
      packages=find_packages(exclude=('tests')),
+     # bundle all of MANIFEST.ini in the egg pkg setup.
+     include_package_data=True,                  
      entry_points={
          'console_scripts': ['mkrepo=mkrepo.cmdline:main']
      }
