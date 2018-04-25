@@ -16,18 +16,24 @@ There are 2 kinds of repo I suspect
 from docopt import docopt
 import shutil
 import os
+import logging
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+log.addHandler(ch)
+
 
 DOCOPT = """Make a repo for python
 
 Usage:
-    mkrepo.py <pkgname> <rootdir> [--cli]
+    mkrepo.py <pkgname> <rootdir> [--dryrun]
     mkrepo.py (-h | --help)
     mkrepo.py (-t | --test)
  
 Options:
     -h --help     Show this screen
     -t --test     Run tests  
-    --cli         Create repo suitable for cli tool not micro-web-service
+    --dryrun      Do not actually create files
 
 """
 
@@ -41,7 +47,7 @@ def mk_dir_uservice():
 
 def get_template(templatename):
     # read from our location
-    with open(os.path.join(THISDIR, 'templates', templatename), encoding="utf-8") as fo:
+    with open(os.path.join(TEMPLATEDIR, templatename), encoding="utf-8") as fo:
         template = fo.read()
     return template
 
@@ -51,9 +57,25 @@ def write_file(filename, text):
         pth = os.path.join(ROOTDIR, filename)
     else:
         pth = filename
-    with open(pth, 'w', encoding="utf-8") as fo:
-        fo.write(text)
-        
+    if os.path.isfile(pth):
+        log.warning("File %s exists - will not overwrite", pth)
+    else:
+        if DRYRUN:
+            log.info("Dry Run - would have written %s", pth)
+        else:
+            log.info("Writing file %s", pth)
+            with open(pth, 'w', encoding="utf-8") as fo:
+                fo.write(text)
+
+def dir_maker(dirpath):
+    """proxy for os.makedirs"""
+    if DRYRUN:
+        log.info("Dry Run - would have mkdir %s", dirpath)
+    else:
+        log.info("Make dir %s", dirpath)
+        os.makedirs(dirpath, exist_ok=True)
+            
+    
 def mk_dir(rootdir):
     """If not existing, create rootdir
 
@@ -64,12 +86,8 @@ def mk_dir(rootdir):
     >>> shutil.rmtree('/tmp/foo1')
 
     """
-    print(rootdir)
-    print(PKGNAME)
-    
-    os.makedirs(rootdir, exist_ok=True)
-    os.makedirs(os.path.join(rootdir, PKGNAME), exist_ok=True)
-    print(os.path.join(rootdir, PKGNAME, '__init__.py'))
+    dir_maker(rootdir)
+    dir_maker(os.path.join(rootdir, PKGNAME))
     write_file(os.path.join(rootdir, PKGNAME, '__init__.py'), '')
     
 ##############################################################
@@ -106,10 +124,10 @@ def mk_make():
     write_file('Makefile', 'TBD')
     
 def mk_docs():
-    os.makedirs(os.path.join(ROOTDIR, 'docs'), exist_ok=True)
+    dir_maker(os.path.join(ROOTDIR, 'docs'))
 
 def mk_tests():
-    os.makedirs(os.path.join(ROOTDIR, 'tests'), exist_ok=True)
+    dir_maker(os.path.join(ROOTDIR, 'tests'))
 
 def mk_readme():
     write_file('README.rst',
@@ -125,17 +143,23 @@ def mk_requirements():
 ###############################################################
 ROOTDIR = None
 PKGNAME = None
-THISDIR = None
+TEMPLATEDIR = None
+DRYRUN = False
 
 def run(args):
-    global THISDIR, ROOTDIR, PKGNAME
+    global TEMPLATEDIR, ROOTDIR, PKGNAME, DRYRUN
     if args['--test']:
         runtests()
     else:
-        PKGNAME = args['<pkgname>']
+        DRYRUN = args['--dryrun']
+        PKGNAME = args['<pkgname>'].lower()
+        pkgtitle = PKGNAME.title()
         parentdir = args['<rootdir>']
-        ROOTDIR = os.path.join(parentdir, PKGNAME)
-        THISDIR = os.path.dirname(os.path.abspath(__file__))
+        ROOTDIR = os.path.abspath(os.path.join(parentdir, pkgtitle))
+        TEMPLATEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   'templates')
+        print(f"ROOTDIR {ROOTDIR} \nPKGNAME {PKGNAME} \nTEMPLATEDIR {TEMPLATEDIR}")
+        
         doall()
         
 def doall():
