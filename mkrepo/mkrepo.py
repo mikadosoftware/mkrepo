@@ -21,7 +21,9 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 log.addHandler(ch)
-
+#to be set carefully..
+#how to set in tests???
+confd = {}
 
 DOCOPT = """Make a repo for python
 
@@ -47,20 +49,20 @@ def mk_dir_uservice():
 
 def get_template(templatename):
     # read from our location
-    with open(os.path.join(TEMPLATEDIR, templatename), encoding="utf-8") as fo:
+    with open(os.path.join(confd['templatedir'], templatename), encoding="utf-8") as fo:
         template = fo.read()
     return template
 
 def write_file(filename, text):
     """ """
     if not os.path.isabs(filename):
-        pth = os.path.join(ROOTDIR, filename)
+        pth = os.path.join(confd['rootdir'], filename)
     else:
         pth = filename
     if os.path.isfile(pth):
         log.warning("File %s exists - will not overwrite", pth)
     else:
-        if DRYRUN:
+        if confd['dryrun']:
             log.info("Dry Run - would have written %s", pth)
         else:
             log.info("Writing file %s", pth)
@@ -69,7 +71,7 @@ def write_file(filename, text):
 
 def dir_maker(dirpath):
     """proxy for os.makedirs"""
-    if DRYRUN:
+    if confd['dryrun']:
         log.info("Dry Run - would have mkdir %s", dirpath)
     else:
         log.info("Make dir %s", dirpath)
@@ -79,22 +81,23 @@ def dir_maker(dirpath):
 def mk_dir(rootdir):
     """If not existing, create rootdir
 
-    >>> os.makedirs('/tmp/foo1')
+    >>> confd['pkgname'] = 'foo'
+    >>> os.makedirs('/tmp/foo1', exist_ok=True)
     >>> mk_dir('/tmp/foo1/wibble')
-    >>> os.isdir('/tmp/foo1/wibble')
+    >>> os.path.isdir('/tmp/foo1/wibble')
     True
     >>> shutil.rmtree('/tmp/foo1')
 
     """
     dir_maker(rootdir)
-    dir_maker(os.path.join(rootdir, PKGNAME))
-    write_file(os.path.join(rootdir, PKGNAME, '__init__.py'), '')
+    dir_maker(os.path.join(rootdir, confd['pkgname']))
+    write_file(os.path.join(rootdir, confd['pkgname'], '__init__.py'), '')
     
 ##############################################################
 
-def mk_setup(pkgname):
+def mk_setup():
     template = get_template('setup.py')
-    text = template.format(pkgname=pkgname)
+    text = template.format(pkgname=confd['pkgname'])
     write_file('setup.py', text)
 
 def mk_version():
@@ -124,15 +127,15 @@ def mk_make():
     write_file('Makefile', 'TBD')
     
 def mk_docs():
-    dir_maker(os.path.join(ROOTDIR, 'docs'))
+    dir_maker(os.path.join(confd['rootdir'], 'docs'))
 
 def mk_tests():
-    dir_maker(os.path.join(ROOTDIR, 'tests'))
+    dir_maker(os.path.join(confd['rootdir'], 'tests'))
 
 def mk_readme():
     write_file('README.rst',
-               '{pkgname}\n{underline}\n'.format(pkgname=PKGNAME,
-                                                 underline='='*len(PKGNAME)))
+               '{pkgname}\n{underline}\n'.format(pkgname=confd['pkgname'],
+                                                 underline='='*len(confd['pkgname'])))
 
 def mk_gitignore():
     template = get_template('.gitignore')
@@ -140,31 +143,53 @@ def mk_gitignore():
 
 def mk_requirements():
     write_file('requirements.txt', '# populate as needed')
+    
 ###############################################################
-ROOTDIR = None
-PKGNAME = None
-TEMPLATEDIR = None
-DRYRUN = False
+
+
+def mktitle(txt):
+    """From a txt generate title, special casing Python
+
+    >>> mktitle("project")
+    'Project'
+    >>> mktitle("pyproject")
+    'pyProject'
+ 
+    """
+    if txt[:2] == 'py':
+        tmp = txt[2:].title()
+        title = 'py' + tmp
+    else:
+        title = txt.title()
+    return title
+    
 
 def run(args):
-    global TEMPLATEDIR, ROOTDIR, PKGNAME, DRYRUN
+    paramd = {'rootdir': None,
+              'pkgname': None,
+              'dryrun' : None,
+              'templatedir':None
+             }
+
+    parentdir = args['<rootdir>']
+    paramd['pkgname'] = args['<pkgname>'].lower()
+    pkgtitle = mktitle(paramd['pkgname'])
+    paramd['rootdir'] = os.path.abspath(os.path.join(parentdir, pkgtitle))
+    paramd['dryrun'] = args['--dryrun']
+    paramd['templatedir'] = os.path.join(os.path.dirname(
+                                             os.path.abspath(__file__)),
+                                             'templates')
+    global confd
+    confd = paramd
+
     if args['--test']:
         runtests()
     else:
-        DRYRUN = args['--dryrun']
-        PKGNAME = args['<pkgname>'].lower()
-        pkgtitle = PKGNAME.title()
-        parentdir = args['<rootdir>']
-        ROOTDIR = os.path.abspath(os.path.join(parentdir, pkgtitle))
-        TEMPLATEDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                   'templates')
-        print(f"ROOTDIR {ROOTDIR} \nPKGNAME {PKGNAME} \nTEMPLATEDIR {TEMPLATEDIR}")
-        
         doall()
         
 def doall():
-    mk_dir(ROOTDIR)
-    mk_setup(PKGNAME)
+    mk_dir(confd['rootdir'])
+    mk_setup()
     mk_version()
     mk_license()
     mk_authors()
@@ -180,8 +205,8 @@ def doall():
     mk_tests()
 
 def runtests():
-    import doctests
-    doctests.testmod()
+    import doctest
+    doctest.testmod()
 
 def main():
     args = docopt(DOCOPT)
