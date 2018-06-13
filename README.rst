@@ -29,3 +29,115 @@ the (library) and does one little thing.  todoinator is a fairly good example.
   setup.py
 
 	       
+
+
+* SOme hints
+Writing clean code (distilled form Uncle Bob)
+
+https://github.com/zedr/clean-code-python
+
+
+How to monitor code quality automatically and manually
+------------------------------------------------------
+
+WE have two sets of code quality measures - the automat*able* part,
+that is represented by code linting and testing.
+
+Why do we test?  For *one* reason - to ensure we have not regressed -
+made changes that break things that previously were working.  This is
+important.
+
+I am not a huge fan of the TDD movement.  It is important to write
+tests, yes.  But to design by writing tests is like
+
+
+PyLint
+------
+
+Pylint is both *great* and *annoying*.
+
+::
+
+   pylint --list-msgs
+
+   Will output a complete list of the messages it checks for and the rationales.
+
+   pylint --generate-rcfile
+
+   A good starting point.
+
+
+https://github.com/zedr/clean-code-python
+
+
+How to monitor code quality automatically and manually
+------------------------------------------------------
+
+WE have two sets of code quality measures - the automat*able* part,
+that is represented by code linting and testing.
+
+Why do we test?  For *one* reason - to ensure we have not regressed -
+made changes that break things that previously were working.  This is
+important.
+
+I am not a huge fan of the TDD movement.  It is important to write
+tests, yes.  But to design by writing tests is like
+
+
+PyLint
+------
+
+Pylint is both *great* and *annoying*.
+
+::
+
+   pylint --list-msgs
+
+   Will output a complete list of the messages it checks for and the rationales.
+
+   pylint --generate-rcfile
+
+   A good starting point.
+
+
+
+https://github.com/zedr/clean-code-python
+
+
+How to monitor code quality automatically and manually
+------------------------------------------------------
+
+WE have two sets of code quality measures - the automat*able* part,
+that is represented by code linting and testing.
+
+Why do we test?  For *one* reason - to ensure we have not regressed -
+made changes that break things that previously were working.  This is
+important.
+
+I am not a huge fan of the TDD movement.  It is important to write
+tests, yes.  But to design by writing tests is like
+
+
+PyLint
+------
+
+Pylint is both *great* and *annoying*.
+
+::
+
+   pylint --list-msgs
+
+   Will output a complete list of the messages it checks for and the rationales.
+
+   pylint --generate-rcfile
+
+   A good starting point but we want to 
+
+   
+   $ pylint --list-msgs | cut -d " " -f 1 | grep . | sed 's/://g' | sort
+
+We then adjust the .pylintrc to have the complete set of messages, and
+we selectively disable some.  mkrepo uses a fairly reasonable
+default - trying ofr the Goldilocks zone of not too much not too
+little
+

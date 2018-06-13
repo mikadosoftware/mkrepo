@@ -13,7 +13,9 @@ There are 2 kinds of repo I suspect
 # TODO: idempotent - can be run over any dir, and will create only missing parts
 
 """
+f = "########################################################################################################################################## akjdlkfjkfjklsjfjjfjsdlkfjsdlkjflksdjflkjsdlkfjsd"
 from docopt import docopt
+
 import shutil
 import os
 import logging
@@ -131,12 +133,16 @@ def mk_docs():
 
 def mk_tests():
     dir_maker(os.path.join(confd['rootdir'], 'tests'))
-
+    
 def mk_readme():
     write_file('README.rst',
                '{pkgname}\n{underline}\n'.format(pkgname=confd['pkgname'],
                                                  underline='='*len(confd['pkgname'])))
 
+def mk_pylint():
+    template = get_template('.pylintrc')
+    write_file('.pylintrc', template)
+    
 def mk_gitignore():
     template = get_template('.gitignore')
     write_file('.gitignore', template)
