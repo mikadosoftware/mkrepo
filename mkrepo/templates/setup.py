@@ -1,6 +1,7 @@
 #! -*- coding:utf-8 -*-
 
 from setuptools import setup, find_packages
+import glob
 
 # get version data
 with open("VERSION") as fo:
@@ -12,7 +13,6 @@ setup(
      description='A Description to change',
      author='author',
      packages=find_packages(exclude=('tests')),
-     entry_points={{
-         'console_scripts': ['{pkgname}={pkgname}.cmdline:main']
-     }}
+     # Any scripts (i.e. python/bash) found here will be added to PATH
+     scripts=glob.glob('scripts/*')
 )

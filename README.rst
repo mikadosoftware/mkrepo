@@ -141,3 +141,23 @@ we selectively disable some.  mkrepo uses a fairly reasonable
 default - trying ofr the Goldilocks zone of not too much not too
 little
 
+Scripts and entrypoints
+-----------------------
+
+Most of the value of small repos is (in my view) to provide libraries
+for services, or to provide little command line tools.
+
+These little command line tools I come to like more and more so there
+is a slow standarisation happening.
+
+1. I have repos like 'mikado.tools' The repo can store the code to
+run the tool or have it as a dependancy.  Depednacies I need to
+publish on pypi. Possibly as apt/.deb packages as well using
+pyholodeck
+
+2. we must have a python script in 'scripts'
+   setup.py will install it like so
+   scripts=glob.glob('scripts/*')
+   and it will be then runnable / avalable as a commandline feature
+
+3. 

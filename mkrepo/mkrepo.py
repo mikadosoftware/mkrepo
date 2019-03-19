@@ -13,7 +13,7 @@ There are 2 kinds of repo I suspect
 # TODO: idempotent - can be run over any dir, and will create only missing parts
 
 """
-f = "########################################################################################################################################## akjdlkfjkfjklsjfjjfjsdlkfjsdlkjflksdjflkjsdlkfjsd"
+
 from docopt import docopt
 
 import shutil
@@ -157,7 +157,7 @@ def mktitle(txt):
     """From a txt generate title, special casing Python
 
     >>> mktitle("project")
-    'Project'
+    'project'
     >>> mktitle("pyproject")
     'pyProject'
  
@@ -166,7 +166,7 @@ def mktitle(txt):
         tmp = txt[2:].title()
         title = 'py' + tmp
     else:
-        title = txt.title()
+        title = txt.lower()
     return title
     
 
