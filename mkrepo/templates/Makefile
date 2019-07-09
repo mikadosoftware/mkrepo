@@ -1,17 +1,26 @@
+#CONSTANTS
+PYTHON=python
 
-clean:
-    echo "TBD"
+#TARGETS
+.PHONY : help clear wheel installlocal
 
-lint:
-    echo "TBD"
+help : Makefile
+	@sed -n 's/^##//p' $<
 
-coverage:
-    echo "TBD"
+##clear: clean setup build stuff
+clear :
+	rm -rf *.egg-info/
+	rm -rf dist/ build/ 
 
-test:
-    echo "TBD"
+##wheel: Build the wheel for distribution
+wheel :
+	clear
+	$(PYTHON) setup.py bdist_wheel
 
-all: clean lint test coverage
+##installlocal: install locally for testing
+installlocal :
+	clear
+	$(PYTHON) setup.py install
 
 
-
+# useful reference for make: https://swcarpentry.github.io/make-novice/reference
