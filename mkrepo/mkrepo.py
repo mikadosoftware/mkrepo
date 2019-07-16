@@ -141,7 +141,10 @@ def mk_manifest():
 
 
 def mk_make():
-    write_file("Makefile", "TBD")
+    template = get_template("Makefile")
+    text = template
+    write_file("Makefile", text)
+
 
 
 def mk_docs():
