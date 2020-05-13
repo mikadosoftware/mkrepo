@@ -86,19 +86,31 @@ def dir_maker(dirpath):
 
 
 def mk_dir(rootdir):
-    """If not existing, create rootdir
+    """If not existing, create rootdir, then subdirs needed
 
     >>> confd['pkgname'] = 'foo'
-    >>> os.makedirs('/tmp/foo1', exist_ok=True)
-    >>> mk_dir('/tmp/foo1/wibble')
-    >>> os.path.isdir('/tmp/foo1/wibble')
+    >>> confd['dir_hierarchy'] = 'foo'.split("-")
+    >>> os.makedirs('/tmp/foo2', exist_ok=True)
+    >>> mk_dir('/tmp/foo2/wibble')
+    >>> os.path.isdir('/tmp/foo2/wibble')
     True
-    >>> shutil.rmtree('/tmp/foo1')
+    >>> shutil.rmtree('/tmp/foo2')
+
+    >>> confd['pkgname'] = 'mikado-foo'
+    >>> confd['dir_hierarchy'] = 'mikado-foo'.split("-")
+    >>> os.makedirs('/tmp/test123/projects', exist_ok=True)
+    >>> mk_dir('/tmp/test123/projects')
+    >>> os.path.isdir('/tmp/test123/projects/mikado/foo')
+    True
+    >>> shutil.rmtree('/tmp/test123')
 
     """
     dir_maker(rootdir)
-    dir_maker(os.path.join(rootdir, confd["pkgname"]))
-    write_file(os.path.join(rootdir, confd["pkgname"], "__init__.py"), "")
+    path = rootdir
+    for _dir in confd["dir_hierarchy"]:
+        path = os.path.join(path, _dir)
+        dir_maker(path)
+        write_file(os.path.join(path, "__init__.py"), "")
 
 
 ##############################################################
@@ -201,9 +213,15 @@ def run(args):
         confd['dryrun'] = False
         runtests()
     else:
-        paramd = {"rootdir": None, "pkgname": None, "dryrun": None, "templatedir": None}
+        paramd = {"rootdir": None,
+                  "pkgname": None,
+                  "dir_hierarchy": None, #Used to split m-s name into m/s
+                  "dryrun": None,
+                  "templatedir": None}
         parentdir = args["<rootdir>"]
         paramd["pkgname"] = args["<pkgname>"].lower()
+        paramd["dir_hierarchy"] = args["<pkgname>"].lower().split("-")
+        
         pkgtitle = mktitle(paramd["pkgname"])
         paramd["rootdir"] = os.path.abspath(os.path.join(parentdir, pkgtitle))
         paramd["dryrun"] = args["--dryrun"]
